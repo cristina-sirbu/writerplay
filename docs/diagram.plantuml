@@ -1,0 +1,27 @@
+@startuml
+title WriterPlay: Songwriter Impact Analyzer
+
+actor Publisher as P
+
+P --> CatalogController : Upload CSV or trigger read
+CatalogController --> CatalogReaderService : Parse songs from GCS
+CatalogReaderService --> GCP_Storage : Read CSV file
+CatalogReaderService --> CatalogEnricherService : Send Song list
+
+CatalogEnricherService --> SpotifyAuthService : Get auth token
+CatalogEnricherService --> SpotifySearchService : Search track by ISRC
+SpotifySearchService --> SpotifyAPI : Fetch track metadata
+
+CatalogEnricherService --> CatalogReaderService : Update enriched catalog
+
+CatalogReaderService --> BigQueryWriterService : Persist songs
+BigQueryWriterService --> BigQuery : Insert rows
+
+SummaryController --> BigQueryReaderService : Run queries
+BigQueryReaderService --> BigQuery : Read summarized data
+
+'SpotifyAPI [#8fd3fe]
+'GCP_Storage [#f0ad4e]
+'BigQuery [#f7dc6f]
+
+@enduml
